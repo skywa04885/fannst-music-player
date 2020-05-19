@@ -16,37 +16,34 @@
 
 using namespace MusicReader;
 
-void cb(uint8_t *buf, uint32_t frameCount)
-{
-  for (int i = 0; i < frameCount; i++)
-  {
-    buf[i] = rand() % 10 * 100;
-  }
-}
-
 int main(const int argc, const char **argv)
 {
   Logger console("Main", LoggerLevel::L_INFO);
 
   // Prints the initial message
-  console
-    .append<const char *>("Main started ...")
-    .print();
+  console.append("By Luke A.C.A. Rieff @ Fannst Software").print();
 
-  // Run code here
-  Files::MSWav file("../audio/wav/faded.wav");
-  file.readHeaders().printHeaders(console);
+  // ====
+  // Plays the file
+  // ====
 
   std::atomic<bool> play(true);
 
+  // Creates the file and reads the headers
+  Files::MSWav file("../audio/wav/faded.wav");
+  file.readHeaders().printHeaders(console);
+
+  // Creates the audio handler
   AudioHandler ah(file.m_Headers.h_SampleRate, file.m_Headers.h_NumChannels);
+
+  // Goes to the data segment
   file.gotoDataSegmentStart();
-  ah.play(play, &file.audioHandlerCallback, &file);
+
+  // Starts playing
+  ah.play(play, &file.audioHandlerCallback, &file, file.getPlayingTime());
 
   // Prints the final message
-  console
-    .append<const char *>("Main ended ...")
-    .print();
+  console.append("Quitting").print();
 
   return 0;
 }

@@ -58,7 +58,7 @@ namespace MusicReader
 		// Sets the sample rate
 		snd_pcm_hw_params_set_rate_near(this->a_Handle, this->a_Params, &this->a_SampleRate, &this->a_Dir);
 		// Sets the period size to 32 frames
-		this->a_Frames = 32;
+		this->a_Frames = 128;
 		snd_pcm_hw_params_set_period_size_near(this->a_Handle, this->a_Params, &this->a_Frames, &this->a_Dir);
 
 		// Writes the parameters to the driver
@@ -67,14 +67,14 @@ namespace MusicReader
 			throw std::runtime_error(std::string("Could not write parameters to driver: ") + snd_strerror(rc));
 	}
 
-	void AudioHandler::play(std::atomic<bool> &shouldRun, void (*dataCallback)(uint8_t *, uint32_t, void *), void *ud)
+	void AudioHandler::play(std::atomic<bool> &shouldRun, 
+		void (*dataCallback)(uint8_t *, uint32_t, void *), void *ud, const uint32_t& playLenS)
 	{
 		int rc;
-		uint32_t periodTime, len, bufferSize, frameCount;
+		uint32_t periodTime, bufferSize, frameCount;
 		std::size_t loops;
+		short shouldUpdate = 0;
 		uint8_t *buffer;
-
-		len = 90;
 
 		// ====
 		// Prepares to play
@@ -92,7 +92,10 @@ namespace MusicReader
 		// Gets the period time
 		snd_pcm_hw_params_get_period_time(this->a_Params, &periodTime, &this->a_Dir);
 		// Calculates the amount of loops
-		loops = (static_cast<std::size_t>(len) * 1000000) / periodTime;
+		loops = (static_cast<std::size_t>(playLenS) * 1000000) / periodTime;
+
+		// Creates the progress bar 
+		ProgressBar<std::size_t> progressBar(loops, "Hello World This Is an Test");
 
 		// ====
 		// Starts playing
@@ -101,6 +104,15 @@ namespace MusicReader
 		// Starts the looping
 		for (std::size_t i = 0; i < loops; i++)
 		{
+			// Increments should update
+			if (shouldUpdate >= 200)
+			{
+				shouldUpdate = 0;
+				
+				// Updates the progress bar
+				progressBar.update(i);
+			} else shouldUpdate++;
+
 			// Requests the data to the buffer
 			dataCallback(buffer, frameCount, ud);
 

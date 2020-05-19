@@ -10,6 +10,9 @@ ADD_LIBRARY(
 
 	classes/AudioHandler.class.hpp
 	classes/AudioHandler.class.cpp
+
+	classes/ProgressBar.class.hpp
+	classes/ProgressBar.class.cpp
 )
 
 ADD_LIBRARY(

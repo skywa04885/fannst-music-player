@@ -24,6 +24,8 @@
 #include <malloc.h>
 #include <random>
 
+#include "ProgressBar.class.hpp"
+
 namespace MusicReader
 {
 	class AudioHandler
@@ -32,7 +34,8 @@ namespace MusicReader
 		AudioHandler(const uint32_t &sampleRate, const uint16_t &numChannels);
 		~AudioHandler();
 
-		void play(std::atomic<bool> &shouldRun, void (*dataCallback)(uint8_t *, uint32_t, void *), void *ud);
+		void play(std::atomic<bool> &shouldRun, 
+			void (*dataCallback)(uint8_t *, uint32_t, void *), void *ud, const uint32_t& playLenS);
 	private:
 		snd_pcm_t *a_Handle;
 		snd_pcm_hw_params_t *a_Params;

@@ -17,6 +17,7 @@
 #include <iostream>
 #include <string>
 #include <atomic>
+#include <iomanip>
 
 #include "classes/Logger.class.hpp"
 #include "classes/MSWav.class.hpp"

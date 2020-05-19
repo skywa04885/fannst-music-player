@@ -46,6 +46,11 @@ namespace MusicReader::Files
 		this->m_FileStream.close();
 	}
 
+	uint32_t MSWav::getPlayingTime()
+	{
+		return this->m_PlayingTime;
+	}
+
 	MSWav &MSWav::readHeaders()
 	{
 		Logger logger("ReadHeadersDebug", LoggerLevel::L_DEBUG);
@@ -84,12 +89,17 @@ namespace MusicReader::Files
 		this->m_FileStream.read(reinterpret_cast<char *>(&initialChunk), sizeof (MSWavFileMetaData) - sizeof (char *) - sizeof (uint32_t));
 		printMSWavFileMetaData(0, initialChunk, logger);
 
+		// Calculates the len
+		this->m_PlayingTime = this->calculateLengthSeconds();
+
 		// Checks if it is info
 		if (memcmp(initialChunk.m_ChunkID, "INFO", 4) != 0)
 		{
 			// Returns
 			return *this;
 		}
+
+		return *this;
 
 		// Reads the info data
 		initialChunk.m_Data = reinterpret_cast<char *>(malloc(sizeof (char) * this->m_Headers.h_SubChunk2Size));
@@ -107,7 +117,8 @@ namespace MusicReader::Files
 			c.m_Data = reinterpret_cast<char *>(malloc(sizeof (char) * c.m_Size));
 			// Reads the METADATA data
 			this->m_FileStream.read(reinterpret_cast<char *>(c.m_Data), c.m_Size);
-			
+			std::cout << c.m_Size << std::endl;
+
 			// Checks if it is data
 			if (memcmp(c.m_ChunkID, "data", 4) == 0)
 			{
@@ -159,5 +170,24 @@ namespace MusicReader::Files
 		logger.append("End MSWav Header").print();
 
 		return *this;
+	}
+
+	/**
+	 * Calculates the file length
+	 */
+	uint32_t MSWav::calculateLengthSeconds()
+	{
+		// Stores the old pos
+		std::size_t old = this->m_FileStream.tellg();
+
+		// Goes to the file end
+		this->m_FileStream.seekg(0, this->m_FileStream.end);
+		// Calculates the len
+		uint32_t len = m_FileStream.tellg() / this->m_Headers.h_ByteRate;
+		
+		// Restores the original value
+		this->m_FileStream.seekg(old, this->m_FileStream.beg);
+
+		return len;
 	}
 }

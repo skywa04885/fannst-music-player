@@ -62,8 +62,10 @@ namespace MusicReader::Files
 
     static void audioHandlerCallback(uint8_t *buff, uint32_t frameCount, void *ud);
     void readChunks(uint8_t *buff, uint32_t frameCount);
-
     void gotoDataSegmentStart();
+    uint32_t calculateLengthSeconds();
+
+    uint32_t getPlayingTime();
 
     MSWavFileHeader m_Headers;
     std::vector<MSWavFileMetaData> m_MetaData;
@@ -71,6 +73,6 @@ namespace MusicReader::Files
     const char *m_File;
     std::ifstream m_FileStream;
     std::size_t m_ReadChunkPos;
-    uint32_t m_FrameSize;
+    uint32_t m_FrameSize, m_PlayingTime;
   };
 }
